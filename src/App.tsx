@@ -1,166 +1,136 @@
-import { useState } from "react";
-import { UsersType } from ".";
-import React from "react";
+import React, { useState } from "react";
+import { shortId } from "uq-id";
 
-function findMax(users: UsersType) {
-  console.log("call func");
-  if (!users) return null;
+export default function App() {
+  const [sample, setSample] = useState(
+    Array.from({ length: 5 }, (x) => shortId())
+  );
+  const [rem, setRem] = useState();
 
-  let maxPair = users[0];
+  const handleClick = () => {
+    const newSample = [...sample];
+    const newRem = newSample.splice(3, 1);
+    setSample(newSample);
+    setRem(newRem);
+  };
+  {
+    /*наприклад якщо нам треба видалити іграшку під номером 3, то ми видалимо її, але react буде думати що вона ще є, 
+    тому що номер 4 перемістився в номер 3, значить вона ще є(для react), а фактично її нема
+    
+    Як React бачить світ з індексами як ключами:
 
-  for (let i = 0; i < users.length; i++) {
-    if (users[i][0] > maxPair[0] && users[i][1] > maxPair[1]) {
-      maxPair = users[i];
-    }
+    React думає: "Я відстежую елементи за їхніми номерами (індексами)"
+    У нас є іграшки з номерами 0, 1, 2, 3, 4
+    
+    Коли видаляємо іграшку з номером 3:
+
+    До видалення: іграшки з номерами [0, 1, 2, 3, 4]
+    Після видалення: іграшки з номерами [0, 1, 2, 3] (бо іграшка 4 тепер стала номером 3!)
+    
+    Що думає React:
+
+    "О, у мене були елементи з номерами 0, 1, 2, 3, 4"
+    "Тепер у мене є елементи з номерами 0, 1, 2, 3"
+    "Отже, зник елемент з номером 4, а не з номером 3!"
+
+
+    Що відбувається на практиці:
+
+    React зберігає стан елементів (наприклад, текст в полях вводу) прив'язаним до ключів
+    Коли ми видаляємо елемент 3, елемент 4 переїжджає на позицію 3
+    Але React думає, що елемент 3 залишився тим самим
+    Тому React зберігає стан елемента 3, хоча фізично це вже зовсім інший елемент!*/
   }
-
-  return maxPair;
-}
-
-function App({ users }: { users: UsersType }) {
-  console.log("APP RENDERING");
-  //debugger;
-  /*При такій реалізації, користувачі будуть постійно рендеритись, тому якщо об'кт складніший за виклик функції,
-   краще використовувати варіант нижче*/
-  // let maxPair = findMax(users);
-  // if (!maxPair) maxPair = [10, 10];
-
-  // let [player1Count, setPlayer1Count] = useState(maxPair[0]);
-  // let [player2Count, setPlayer2Count] = useState(maxPair[0]);
-
-  let [player1Count, setPlayer1Count] = useState(() => {
-    let maxPair = findMax(users);
-    if (!maxPair) maxPair = [10, 10];
-    return maxPair[0];
-  });
-
-  let [player2Count, setPlayer2Count] = useState(() => {
-    let maxPair = findMax(users);
-    if (!maxPair) maxPair = [10, 10];
-    return maxPair[1];
-  });
-
   return (
     <div>
+      <h4>Example to see the index as key issue</h4>
+      <div onClick={handleClick}>Click to remove 3rd element</div>
       <div>
-        <div>keyforr</div>
-        <div>{player1Count}</div>
-        <button onClick={() => setPlayer1Count((actual) => actual + 1)}>
-          +
-        </button>
+        {sample.map((s, index) => (
+          <div key={index}>
+            {index}: <input defaultValue={s} />
+          </div>
+        ))}
       </div>
-      <hr />
-      <div>
-        <div>ddayeena</div>
-        <div>{player2Count}</div>
-        <button onClick={() => setPlayer2Count((actual) => actual + 1)}>
-          +
-        </button>
-      </div>
-      <hr />
-      <button
-        onClick={() => {
-          setPlayer1Count((actual) => actual - 1);
-          setPlayer2Count((actual) => actual - 1);
-        }}
-      >
-        -
-      </button>
-      <button
-        onClick={() => {
-          setPlayer1Count(10);
-          setPlayer2Count(10);
-        }}
-      >
-        reset
-      </button>
+      <div key={rem}>Removed element: {rem}</div>
     </div>
   );
 }
 
-function App_({ users }: { users: UsersType }) {
-  console.log("APP RENDERING");
-  let [player1Counter, setPlayer1Counter] = useState(10);
-  console.log("actual player 1 value:" + player1Counter);
-  let [player2Counter, setPlayer2Counter] = useState(10);
+// import React, { useState } from "react";
 
-  // let [counter, setCounters] = useState({
-  //   c1: 10,
-  //   c2: 10,
-  // });
+// export default function App() {
+//   const [items, setItems] = useState([
+//     { name: "Apple", quantity: 1 },
+//     { name: "Banana", quantity: 2 },
+//   ]);
 
-  return (
-    <div>
-      <div>
-        <div>keyforr</div>
-        <div>
-          {
-            player1Counter
-            //counter.c1
-          }
-        </div>
-        <button
-          onClick={() => {
-            console.log(player1Counter);
-            setPlayer1Counter((actual) => actual + 1); //Правильно
-            console.log(player1Counter);
-            //debugger;
+//   const addItem = () => {
+//     setItems([{ name: "", quantity: 0 }, ...items]);
+//   };
 
-            // setCounters((actual) => {
-            //   return { ...actual, c1: actual.c1 + 1 };
-            // });
-          }}
-        >
-          +
-        </button>
-      </div>
-      <hr />
-      <div>
-        <div>ddayeena</div>
-        <div>
-          {
-            player2Counter
-            //counter.c2
-          }
-        </div>
-        <button
-          onClick={() => {
-            // setPlayer2Counter(player2Counter + 1); //Не правильно
-            setPlayer2Counter((actual) => actual + 1); //Правильно
+//   const handleChange = (index, field, value) => {
+//     const newItems = [...items];
+//     newItems[index][field] = value;
+//     setItems(newItems);
+//   };
 
-            // setCounters((actual) => {
-            //   return { ...actual, c2: actual.c2 + 1 };
-            // });
-          }}
-        >
-          +
-        </button>
-      </div>
-      <hr />
-      <button
-        onClick={() => {
-          setPlayer2Counter(player2Counter - 1);
-          setPlayer1Counter(player1Counter - 1);
-          // setCounters((actual) => {
-          //   return { ...actual, c2: actual.c2 - 1, c1: actual.c1 - 1 };
-          // });
-        }}
-      >
-        -
-      </button>
-      <button
-        onClick={() => {
-          setPlayer2Counter(10);
-          setPlayer1Counter(10);
-          // setCounters((actual) => {
-          //   return { ...actual, c1: 10, c2: 10 };
-          // });
-        }}
-      >
-        reset
-      </button>
-    </div>
-  );
-}
+//   return (
+//     <div>
+//       <button onClick={addItem}>Додати товар зверху</button>
+//       {items.map((item, index) => (
+//         <div key={index}>
+//           <input
+//             placeholder="Назва"
+//             value={item.name}
+//             onChange={(e) => handleChange(index, "name", e.target.value)}
+//           />
+//           <input
+//             type="number"
+//             placeholder="Кількість"
+//             value={item.quantity}
+//             onChange={(e) => handleChange(index, "quantity", e.target.value)}
+//           />
+//         </div>
+//       ))}
+//     </div>
+//   );
+// }
 
-export default App;
+// import React, { useState } from "react";
+
+// export default function App() {
+//   const [items, setItems] = useState([
+//     { id: 1, value: "Apple" },
+//     { id: 2, value: "Banana" },
+//     { id: 3, value: "Cherry" },
+//   ]);
+
+//   const handleAddItem = () => {
+//     const newItem = { id: Date.now(), value: "" };
+//     setItems([newItem, ...items]);
+//   };
+
+//   const handleChange = (id, value) => {
+//     const newItems = items.map((item) =>
+//       item.id === id ? { ...item, value } : item
+//     );
+//     setItems(newItems);
+//   };
+
+//   return (
+//     <div>
+//       <button onClick={handleAddItem}>Add item at top</button>
+//       <ul>
+//         {items.map((item) => (
+//           <li key={item.id}>
+//             <input
+//               value={item.value}
+//               onChange={(e) => handleChange(item.id, e.target.value)}
+//             />
+//           </li>
+//         ))}
+//       </ul>
+//     </div>
+//   );
+// }
